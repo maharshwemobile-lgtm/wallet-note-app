@@ -1,1 +1,5 @@
-import Shell from "@/components/shell";import WalletClient from "@/components/wallet-client";export default function Page(){return <Shell title="Wallet Management"><WalletClient/></Shell>}
+import { redirect } from "next/navigation";
+
+export default function WalletPage() {
+  redirect("/accounts");
+}
