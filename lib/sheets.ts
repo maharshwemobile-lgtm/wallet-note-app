@@ -8,6 +8,10 @@ const USER_SHEET_TABS = [
   { title: "Bets", headers: ["id", "createdAt", "drawId", "customerId", "customerName", "number", "amount", "currency", "status"] },
   { title: "LotteryResults", headers: ["id", "createdAt", "drawId", "winningNumber", "source"] },
   { title: "Settings", headers: ["key", "value"] },
+  { title: "Wallets", headers: ["id", "createdAt", "name", "currency", "initialBalance", "status"] },
+  { title: "Remittances", headers: ["id", "createdAt", "date", "action", "mode", "sourceWalletId", "targetWalletId", "sourceAmount", "rate", "targetAmount", "customerName", "note", "status"] },
+  { title: "Debts", headers: ["id", "createdAt", "date", "type", "name", "currency", "amount", "walletId", "note", "status"] },
+  { title: "LotteryEntries", headers: ["id", "createdAt", "date", "type", "currency", "walletId", "number", "betAmount", "odds", "status"] },
 ] as const;
 
 function getSheetsClient() {
@@ -78,7 +82,7 @@ export function extractSpreadsheetId(input: string) {
   return candidate;
 }
 
-export async function initializeUserSpreadsheet(spreadsheetId: string) {
+export async function ensureUserSpreadsheetTabs(spreadsheetId: string) {
   const client = getSheetsClient();
   const metadata = await client.spreadsheets.get({
     spreadsheetId,
@@ -113,6 +117,10 @@ export async function initializeUserSpreadsheet(spreadsheetId: string) {
   }
 
   return metadata.data.properties?.title ?? "Google Sheet";
+}
+
+export async function initializeUserSpreadsheet(spreadsheetId: string) {
+  return ensureUserSpreadsheetTabs(spreadsheetId);
 }
 
 export async function getUserSpreadsheetId(userId: string) {
