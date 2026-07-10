@@ -5,11 +5,15 @@ import { getObjectRows } from "@/lib/sheets";
 import { createSession, sessionCookie } from "@/lib/auth";
 
 export async function POST(req: Request) {
-  const parsed = z.object({ username: z.string().min(1), password: z.string().min(1) }).safeParse(await req.json());
+  const parsed = z.object({ identity: z.string().min(1), password: z.string().min(1) }).safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  const agents = await getObjectRows("Agents");
-  const agent = agents.find(a => a.username === parsed.data.username && a.active !== "FALSE");
-  if (!agent || !(await bcrypt.compare(parsed.data.password, agent.passwordHash))) return NextResponse.json({ error: "Incorrect username or password" }, { status: 401 });
-  const token = await createSession({ agentId: agent.id, username: agent.username, name: agent.name, role: agent.role });
-  const res = NextResponse.json({ ok: true }); res.cookies.set(sessionCookie.name, token, sessionCookie.options); return res;
+  const identity = parsed.data.identity.trim().toLowerCase();
+  const users = await getObjectRows("Users");
+  const user = users.find(u => u.email?.toLowerCase() === identity || u.username?.toLowerCase() === identity);
+  if (!user || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) return NextResponse.json({ error: "Incorrect email, username or password" }, { status: 401 });
+  if (user.status !== "Active") return NextResponse.json({ error: "This account is suspended" }, { status: 403 });
+  const token = await createSession({ userId: user.id, email: user.email, username: user.username, name: user.name, role: user.role });
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(sessionCookie.name, token, sessionCookie.options);
+  return res;
 }
