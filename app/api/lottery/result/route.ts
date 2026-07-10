@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, winners: winners.length });
 }
 
-export async function fetchWinningNumberFromProvider(drawId: string) {
+async function fetchWinningNumberFromProvider(drawId: string) {
   const endpoint = process.env.LOTTERY_API_URL;
   if (!endpoint) throw new Error("LOTTERY_API_URL is not configured");
   const response = await fetch(`${endpoint}?drawId=${encodeURIComponent(drawId)}`, { headers: { Authorization: `Bearer ${process.env.LOTTERY_API_KEY ?? ""}` }, cache: "no-store" });
