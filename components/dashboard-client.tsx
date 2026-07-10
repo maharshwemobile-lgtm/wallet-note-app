@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, ArrowUpRight, Dices, HandCoins, WalletCards } from "lucide-react";
+import { ArrowLeftRight, ArrowUpRight, CircleCheck, Dices, HandCoins, WalletCards } from "lucide-react";
 
 type Wallet = {
   id: string;
@@ -15,6 +15,11 @@ type Wallet = {
 type RecordRow = Record<string, string>;
 
 type DashboardData = {
+  storage: {
+    provider: string;
+    connected: boolean;
+    spreadsheetTitle: string;
+  };
   wallets: Wallet[];
   remittances: RecordRow[];
   debts: RecordRow[];
@@ -24,8 +29,9 @@ type DashboardData = {
     payable: { MMK: number; THB: number };
   };
   lotterySummary: {
-    bet: { MMK: number; THB: number };
-    win: { MMK: number; THB: number };
+    total: { MMK: number; THB: number };
+    pending: { MMK: number; THB: number };
+    settled: { MMK: number; THB: number };
   };
 };
 
@@ -55,14 +61,15 @@ export default function DashboardClient() {
 
   const walletName = (id: string) => data?.wallets.find((wallet) => wallet.id === id)?.name || "Wallet";
 
-  if (error) {
-    return <div className="card border-red-200 bg-red-50 text-red-700">{error}</div>;
-  }
-  if (!data) {
-    return <div className="card">Dashboard စာရင်းများ ဖွင့်နေပါသည်...</div>;
-  }
+  if (error) return <div className="card border-red-200 bg-red-50 text-red-700">{error}</div>;
+  if (!data) return <div className="card">Dashboard စာရင်းများ ဖွင့်နေပါသည်...</div>;
 
   return <div className="space-y-6">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+      <div className="flex items-center gap-2"><CircleCheck size={18}/><span>Google Sheet ချိတ်ဆက်ထားသည် — {data.storage.spreadsheetTitle}</span></div>
+      <span className="text-xs font-bold">{data.storage.provider}</span>
+    </div>
+
     <section className="grid gap-3 grid-cols-2 xl:grid-cols-4">
       <QuickLink href="/accounts" title="ငွေစာရင်းအကောင့်များ" subtitle={`${data.wallets.length} Wallet`} icon={<WalletCards size={22}/>} />
       <QuickLink href="/remittance" title="ငွေလွှဲ/ငွေထုတ်" subtitle={`${data.remittances.length} မှတ်တမ်း`} icon={<ArrowLeftRight size={22}/>} />
@@ -123,24 +130,24 @@ export default function DashboardClient() {
 
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
       <div className="card">
-        <SectionHeader title="2D/3D စာရင်းချုပ်" href="/lottery" />
+        <SectionHeader title="ချဲ Agent စာရင်းချုပ်" href="/lottery" />
         <div className="grid gap-3 grid-cols-2">
-          <Mini label="MMK ထိုးဖိုး" value={money(data.lotterySummary.bet.MMK, "MMK")} />
-          <Mini label="MMK ပေါက်ငွေ" value={money(data.lotterySummary.win.MMK, "MMK")} accent />
-          <Mini label="THB ထိုးဖိုး" value={money(data.lotterySummary.bet.THB, "THB")} />
-          <Mini label="THB ပေါက်ငွေ" value={money(data.lotterySummary.win.THB, "THB")} accent />
+          <Mini label="ဒိုင်ရှင်းရန် MMK" value={money(data.lotterySummary.pending.MMK, "MMK")} danger />
+          <Mini label="ဒိုင်ရှင်းရန် THB" value={money(data.lotterySummary.pending.THB, "THB")} danger />
+          <Mini label="ရှင်းပြီး MMK" value={money(data.lotterySummary.settled.MMK, "MMK")} accent />
+          <Mini label="ရှင်းပြီး THB" value={money(data.lotterySummary.settled.THB, "THB")} accent />
         </div>
       </div>
 
       <div className="card">
-        <SectionHeader title="နောက်ဆုံး 2D/3D မှတ်တမ်း" href="/lottery" />
+        <SectionHeader title="နောက်ဆုံး ချဲမှတ်တမ်း" href="/lottery" />
         <div className="grid gap-3 sm:grid-cols-2">
           {data.lotteries.slice(0, 6).map((row) => <div key={row.id} className="rounded-xl border border-slate-200 p-3">
-            <div className="flex items-center justify-between gap-3"><span className="text-xs font-bold text-slate-500">{row.type}</span><span className={`text-[10px] font-bold ${row.status === "won" ? "text-emerald-600" : row.status === "lost" ? "text-red-600" : "text-amber-600"}`}>{row.status === "won" ? "ပေါက်" : row.status === "lost" ? "မပေါက်" : "စောင့်ဆိုင်း"}</span></div>
+            <div className="flex items-center justify-between gap-3"><span className="text-xs font-bold text-slate-500">{row.type}</span><span className={`text-[10px] font-bold ${row.status === "settled" ? "text-emerald-600" : "text-amber-600"}`}>{row.status === "settled" ? "ရှင်းပြီး" : "ဒိုင်ရှင်းရန်"}</span></div>
             <p className="mt-2 font-mono text-2xl font-black tracking-widest">{row.number}</p>
-            <div className="mt-2 flex justify-between text-xs"><span className="text-slate-400">{walletName(row.walletId)}</span><span className="font-bold">{money(row.betAmount, row.currency)}</span></div>
+            <div className="mt-2 flex justify-between text-xs"><span className="text-slate-400">{row.date}</span><span className="font-bold">{money(row.betAmount, row.currency)}</span></div>
           </div>)}
-          {data.lotteries.length === 0 && <Empty text="2D/3D မှတ်တမ်း မရှိသေးပါ။" />}
+          {data.lotteries.length === 0 && <Empty text="ချဲမှတ်တမ်း မရှိသေးပါ။" />}
         </div>
       </div>
     </section>
@@ -163,8 +170,9 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
   return <div className="mb-4 flex items-center justify-between gap-3 border-b border-slate-100 pb-4"><h2 className="font-bold">{title}</h2><Link href={href} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900">အားလုံးကြည့်မည် <ArrowUpRight size={14}/></Link></div>;
 }
 
-function Mini({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
-  return <div className={`rounded-xl p-3 ${accent ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700"}`}><p className="text-[10px] font-bold opacity-70">{label}</p><p className="mt-1 font-black">{value}</p></div>;
+function Mini({ label, value, accent = false, danger = false }: { label: string; value: string; accent?: boolean; danger?: boolean }) {
+  const style = danger ? "bg-rose-50 text-rose-700" : accent ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-700";
+  return <div className={`rounded-xl p-3 ${style}`}><p className="text-[10px] font-bold opacity-70">{label}</p><p className="mt-1 font-black">{value}</p></div>;
 }
 
 function Empty({ text }: { text: string }) {
