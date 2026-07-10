@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, WalletCards, ArrowLeftRight, Dices, Settings, LogOut, Users } from "lucide-react";
+import { LayoutDashboard, WalletCards, ArrowLeftRight, Dices, Settings, LogOut, Users, Sheet } from "lucide-react";
 
 const links = [
   ["/dashboard", "Dashboard Overview", LayoutDashboard],
   ["/wallet", "Wallet Management", WalletCards],
   ["/exchange", "Currency Exchange", ArrowLeftRight],
   ["/lottery", "3D Lottery", Dices],
+  ["/connect-sheet", "My Google Sheet", Sheet],
   ["/settings", "Settings", Settings],
 ] as const;
 

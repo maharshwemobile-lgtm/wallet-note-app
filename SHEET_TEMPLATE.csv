@@ -1,8 +1,8 @@
-Sheet,Headers
-Users,"id,name,email,username,passwordHash,role,status,createdAt"
-WalletTransactions,"id,userId,createdAt,type,currency,amount,signedAmount,status,referenceType,referenceId"
-ExchangeTransactions,"id,userId,createdAt,customerName,fromCurrency,fromAmount,toCurrency,toAmount,rate,note"
-Bets,"id,userId,createdAt,drawId,customerId,customerName,number,amount,currency,status"
-LotteryResults,"id,userId,createdAt,drawId,winningNumber,source"
-UserSettings,"userId,thbToMmkRate,payoutMultiplier"
-PasswordResetTokens,"id,userId,tokenHash,expiresAt,usedAt,createdAt"
+Scope,Sheet,Headers
+System,Users,"id,name,email,username,passwordHash,role,status,spreadsheetId,sheetConnectedAt,createdAt"
+System,PasswordResetTokens,"id,userId,tokenHash,expiresAt,usedAt,createdAt"
+User,WalletTransactions,"id,createdAt,type,currency,amount,signedAmount,status,referenceType,referenceId"
+User,ExchangeTransactions,"id,createdAt,customerName,fromCurrency,fromAmount,toCurrency,toAmount,rate,note"
+User,Bets,"id,createdAt,drawId,customerId,customerName,number,amount,currency,status"
+User,LotteryResults,"id,createdAt,drawId,winningNumber,source"
+User,Settings,"key,value"
