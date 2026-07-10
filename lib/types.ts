@@ -12,5 +12,7 @@ export interface AppUser {
   passwordHash: string;
   role: UserRole;
   status: UserStatus;
+  spreadsheetId: string;
+  sheetConnectedAt: string;
   createdAt: string;
 }
