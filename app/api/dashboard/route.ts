@@ -1,11 +1,24 @@
 import { NextResponse } from "next/server";
-import { readSession } from "@/lib/auth";
 import { getBalances } from "@/lib/wallet";
 import { getObjectRows } from "@/lib/sheets";
 import { getUserSettings } from "@/lib/user-settings";
+import { requireUserSheet } from "@/lib/user-sheet";
+
 export async function GET() {
-  const s = await readSession(); if (!s) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const [balances, wallet, bets, settings] = await Promise.all([getBalances(s.userId), getObjectRows("WalletTransactions"), getObjectRows("Bets"), getUserSettings(s.userId)]);
-  const recent = wallet.filter(r => r.userId === s.userId).slice(-8).reverse();
-  return NextResponse.json({ user: s, balances, rate: settings.thbToMmkRate, recent, totalBets: bets.filter(b => b.userId === s.userId).length });
+  const access = await requireUserSheet();
+  if ("error" in access) return NextResponse.json({ error: access.error, needsSheet: access.status === 428 }, { status: access.status });
+  const { session, spreadsheetId } = access;
+  const [balances, wallet, bets, settings] = await Promise.all([
+    getBalances(spreadsheetId),
+    getObjectRows("WalletTransactions", spreadsheetId),
+    getObjectRows("Bets", spreadsheetId),
+    getUserSettings(spreadsheetId),
+  ]);
+  return NextResponse.json({
+    user: session,
+    balances,
+    rate: settings.thbToMmkRate,
+    recent: wallet.slice(-8).reverse(),
+    totalBets: bets.length,
+  });
 }
