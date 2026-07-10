@@ -11,8 +11,10 @@ const USER_SHEET_TABS = [
   { title: "Wallets", headers: ["id", "createdAt", "name", "currency", "initialBalance", "status"] },
   { title: "Remittances", headers: ["id", "createdAt", "date", "action", "mode", "sourceWalletId", "targetWalletId", "sourceAmount", "rate", "targetAmount", "customerName", "note", "status"] },
   { title: "Debts", headers: ["id", "createdAt", "date", "type", "name", "currency", "amount", "walletId", "note", "status"] },
-  { title: "LotteryEntries", headers: ["id", "createdAt", "date", "type", "currency", "walletId", "number", "betAmount", "odds", "status"] },
+  { title: "LotteryEntries", headers: ["id", "createdAt", "date", "type", "currency", "number", "betAmount", "note", "settledAt", "status"] },
 ] as const;
+
+const LEGACY_LOTTERY_HEADERS = ["id", "createdAt", "date", "type", "currency", "walletId", "number", "betAmount", "odds", "status"];
 
 function getSheetsClient() {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -100,6 +102,29 @@ export async function ensureUserSpreadsheetTabs(spreadsheetId: string) {
   for (const tab of USER_SHEET_TABS) {
     const headerRows = await readRows(`${tab.title}!1:1`, spreadsheetId);
     const current = headerRows[0] ?? [];
+
+    if (tab.title === "LotteryEntries" && current.join("|") === LEGACY_LOTTERY_HEADERS.join("|")) {
+      const legacyRows = await readRows("LotteryEntries!A:J", spreadsheetId);
+      const migratedRows: (string | number)[][] = [
+        [...tab.headers],
+        ...legacyRows.slice(1).filter((row) => row.some(Boolean)).map((row) => [
+          row[0] ?? "",
+          row[1] ?? "",
+          row[2] ?? "",
+          row[3] ?? "",
+          row[4] ?? "",
+          row[6] ?? "",
+          row[7] ?? "",
+          "",
+          "",
+          row[9] === "won" || row[9] === "lost" ? "settled" : (row[9] || "pending"),
+        ]),
+      ];
+      await client.spreadsheets.values.clear({ spreadsheetId, range: "LotteryEntries!A:J" });
+      await updateRange(`LotteryEntries!A1:J${migratedRows.length}`, migratedRows, spreadsheetId);
+      continue;
+    }
+
     if (current.length === 0) {
       await updateRange(`${tab.title}!A1:${columnLetter(tab.headers.length)}1`, [[...tab.headers]], spreadsheetId);
     } else if (current.slice(0, tab.headers.length).join("|") !== tab.headers.join("|")) {
