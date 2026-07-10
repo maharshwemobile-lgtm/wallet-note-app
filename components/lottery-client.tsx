@@ -1,0 +1,1 @@
+"use client";import{useEffect,useState}from"react";export default function LotteryClient(){const[bets,setBets]=useState<any[]>([]);const load=()=>fetch('/api/lottery/bets').then(r=>r.json()).then(setBets);useEffect(()=>{void load()},[]);return <div className="card"><h2 className="text-xl font-bold">3D Bets</h2><p className="text-slate-500">Records: {bets.length}</p></div>}

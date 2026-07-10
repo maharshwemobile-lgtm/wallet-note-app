@@ -1,0 +1,1 @@
+"use client";import{useEffect,useState}from"react";export default function SettingsClient(){const[d,setD]=useState<any>(null);useEffect(()=>{fetch('/api/settings').then(r=>r.json()).then(setD)},[]);if(!d)return <>Loading...</>;return <div className="card"><p>THB/MMK Rate: {d.THB_TO_MMK||0}</p><p>3D Multiplier: {d.LOTTERY_PAYOUT_MULTIPLIER||500}</p></div>}
