@@ -1,10 +1,5 @@
-import Shell from "@/components/shell";
-import PremiumWorkspace from "@/components/premium-workspace";
+import { redirect } from "next/navigation";
 
 export default function PremiumPage() {
-  return (
-    <Shell title="Wallet Note Premium">
-      <PremiumWorkspace />
-    </Shell>
-  );
+  redirect("/accounts");
 }
