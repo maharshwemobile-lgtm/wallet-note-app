@@ -132,8 +132,8 @@ export async function setUserSpreadsheetConnection(userId: string, spreadsheetId
   const rowIndex = rows.findIndex((row, index) => index > 0 && row[idColumn] === userId);
   if (rowIndex < 0) throw new Error("User not found");
   const sheetRow = rowIndex + 1;
-  await updateRange(`${columnLetter(spreadsheetColumn + 1)}${sheetRow}`, [[spreadsheetId]]);
-  await updateRange(`${columnLetter(connectedAtColumn + 1)}${sheetRow}`, [[spreadsheetId ? new Date().toISOString() : ""]]);
+  await updateRange(`Users!${columnLetter(spreadsheetColumn + 1)}${sheetRow}`, [[spreadsheetId]]);
+  await updateRange(`Users!${columnLetter(connectedAtColumn + 1)}${sheetRow}`, [[spreadsheetId ? new Date().toISOString() : ""]]);
 }
 
 function columnLetter(columnNumber: number) {
