@@ -1,0 +1,7 @@
+Sheet,Headers
+Agents,"id,username,passwordHash,name,role,active"
+WalletTransactions,"id,createdAt,agentId,type,currency,amount,signedAmount,status,referenceType,referenceId"
+ExchangeTransactions,"id,createdAt,agentId,customerName,fromCurrency,fromAmount,toCurrency,toAmount,rate,note"
+Bets,"id,createdAt,agentId,drawId,userId,userName,number,amount,currency,status"
+LotteryResults,"id,createdAt,drawId,winningNumber,source,createdBy"
+Settings,"key,value"
