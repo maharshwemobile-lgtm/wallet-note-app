@@ -1,4 +1,87 @@
-import{NextResponse}from"next/server";import{z}from"zod";import{readSession}from"@/lib/auth";import{appendRow,getObjectRows,getSetting}from"@/lib/sheets";import{recordWalletTransaction}from"@/lib/wallet";
-export async function GET(req:Request){const s=await readSession();if(!s)return NextResponse.json({error:"Unauthorized"},{status:401});const drawId=new URL(req.url).searchParams.get('drawId')||'';const [bets,results]=await Promise.all([getObjectRows("Bets"),getObjectRows("LotteryResults")]);const result=results.find(r=>r.drawId===drawId);const multiplier=Number(await getSetting("LOTTERY_PAYOUT_MULTIPLIER","500"));const winners=result?bets.filter(b=>b.agentId===s.agentId&&b.drawId===drawId&&b.number===result.winningNumber).map(b=>({...b,payout:Number(b.amount)*multiplier})):[];return NextResponse.json({result,winners,multiplier});}
-export async function POST(req:Request){const s=await readSession();if(!s)return NextResponse.json({error:"Unauthorized"},{status:401});const p=z.object({drawId:z.string().min(1),winningNumber:z.string().regex(/^\d{3}$/),source:z.enum(["MANUAL","API"]).default("MANUAL")}).safeParse(await req.json());if(!p.success)return NextResponse.json({error:"Invalid result"},{status:400});const results=await getObjectRows("LotteryResults");if(results.some(r=>r.drawId===p.data.drawId))return NextResponse.json({error:"Result already exists for this draw"},{status:409});const id=crypto.randomUUID();await appendRow("LotteryResults!A:F",[id,new Date().toISOString(),p.data.drawId,p.data.winningNumber,p.data.source,s.agentId]);const bets=await getObjectRows("Bets");const multiplier=Number(await getSetting("LOTTERY_PAYOUT_MULTIPLIER","500"));const winners=bets.filter(b=>b.agentId===s.agentId&&b.drawId===p.data.drawId&&b.number===p.data.winningNumber);for(const w of winners){await recordWalletTransaction({agentId:s.agentId,type:"PAYOUT",currency:w.currency as any,amount:Number(w.amount)*multiplier,referenceType:"LOTTERY_RESULT",referenceId:id});}return NextResponse.json({ok:true,winners:winners.length});}
-async function fetchWinningNumberFromProvider(drawId:string){const endpoint=process.env.LOTTERY_API_URL;if(!endpoint)throw new Error("LOTTERY_API_URL is not configured");const res=await fetch(`${endpoint}?drawId=${encodeURIComponent(drawId)}`,{headers:{Authorization:`Bearer ${process.env.LOTTERY_API_KEY||""}`}});if(!res.ok)throw new Error("Lottery provider request failed");const data=await res.json();return String(data.winningNumber).padStart(3,"0");}
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { readSession } from "@/lib/auth";
+import { appendRow, getObjectRows } from "@/lib/sheets";
+import { getUserSettings } from "@/lib/user-settings";
+import { recordWalletTransaction } from "@/lib/wallet";
+
+export async function GET(req: Request) {
+  const session = await readSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const drawId = new URL(req.url).searchParams.get("drawId") ?? "";
+  const [bets, results, settings] = await Promise.all([
+    getObjectRows("Bets"),
+    getObjectRows("LotteryResults"),
+    getUserSettings(session.userId),
+  ]);
+  const result = results.find((row) => row.userId === session.userId && row.drawId === drawId);
+  const winners = result
+    ? bets
+        .filter((bet) => bet.userId === session.userId && bet.drawId === drawId && bet.number === result.winningNumber)
+        .map((bet) => ({ ...bet, payout: Number(bet.amount) * settings.payoutMultiplier }))
+    : [];
+
+  return NextResponse.json({ result, winners, multiplier: settings.payoutMultiplier });
+}
+
+export async function POST(req: Request) {
+  const session = await readSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const parsed = z.object({
+    drawId: z.string().min(1).max(60),
+    winningNumber: z.string().regex(/^\d{3}$/),
+    source: z.enum(["MANUAL", "API"]).default("MANUAL"),
+  }).safeParse(await req.json());
+
+  if (!parsed.success) return NextResponse.json({ error: "Invalid result" }, { status: 400 });
+
+  const results = await getObjectRows("LotteryResults");
+  if (results.some((row) => row.userId === session.userId && row.drawId === parsed.data.drawId)) {
+    return NextResponse.json({ error: "Result already exists for this draw" }, { status: 409 });
+  }
+
+  const id = crypto.randomUUID();
+  await appendRow("LotteryResults!A:F", [
+    id,
+    session.userId,
+    new Date().toISOString(),
+    parsed.data.drawId,
+    parsed.data.winningNumber,
+    parsed.data.source,
+  ]);
+
+  const [bets, settings] = await Promise.all([
+    getObjectRows("Bets"),
+    getUserSettings(session.userId),
+  ]);
+  const winners = bets.filter(
+    (bet) => bet.userId === session.userId && bet.drawId === parsed.data.drawId && bet.number === parsed.data.winningNumber,
+  );
+
+  for (const winner of winners) {
+    await recordWalletTransaction({
+      userId: session.userId,
+      type: "PAYOUT",
+      currency: winner.currency as "THB" | "MMK",
+      amount: Number(winner.amount) * settings.payoutMultiplier,
+      referenceType: "LOTTERY_RESULT",
+      referenceId: id,
+    });
+  }
+
+  return NextResponse.json({ ok: true, winners: winners.length });
+}
+
+export async function fetchWinningNumberFromProvider(drawId: string) {
+  const endpoint = process.env.LOTTERY_API_URL;
+  if (!endpoint) throw new Error("LOTTERY_API_URL is not configured");
+  const response = await fetch(`${endpoint}?drawId=${encodeURIComponent(drawId)}`, {
+    headers: { Authorization: `Bearer ${process.env.LOTTERY_API_KEY ?? ""}` },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Lottery provider request failed");
+  const data = await response.json();
+  return String(data.winningNumber).padStart(3, "0");
+}
