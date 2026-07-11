@@ -1,13 +1,27 @@
-import { NextResponse } from "next/server";
 import { WALLET_NOTE_LOGO_URL } from "@/lib/brand";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
-export function GET() {
-  return NextResponse.redirect(WALLET_NOTE_LOGO_URL, {
-    status: 307,
-    headers: {
-      "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
-    },
-  });
+export async function GET() {
+  try {
+    const response = await fetch(WALLET_NOTE_LOGO_URL, {
+      cache: "no-store",
+      headers: { "User-Agent": "Wallet-Note-App" },
+    });
+
+    if (!response.ok) {
+      return new Response("Logo unavailable", { status: 502 });
+    }
+
+    const body = await response.arrayBuffer();
+    return new Response(body, {
+      status: 200,
+      headers: {
+        "Content-Type": response.headers.get("content-type") || "image/png",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      },
+    });
+  } catch {
+    return new Response("Logo unavailable", { status: 502 });
+  }
 }
