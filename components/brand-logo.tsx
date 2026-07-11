@@ -11,6 +11,9 @@ export default function BrandLogo({
   compact?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  const imageClass = compact
+    ? `h-11 w-11 rounded-2xl bg-white object-cover shadow-sm ${className}`
+    : `h-auto w-full rounded-2xl bg-white object-contain ${className}`;
 
   if (failed) {
     return (
@@ -20,7 +23,7 @@ export default function BrandLogo({
         </div>
         {!compact && (
           <div className="min-w-0">
-            <div className="truncate text-lg font-black text-slate-950 dark:text-white">Wallet Note</div>
+            <div className="truncate text-lg font-black text-slate-950">Wallet Note</div>
             <div className="truncate text-[11px] font-semibold text-slate-500">Record. Organize. Grow.</div>
           </div>
         )}
@@ -32,7 +35,7 @@ export default function BrandLogo({
     <img
       src={WALLET_NOTE_BRAND.logoProxy}
       alt="Wallet Note Logo"
-      className={className}
+      className={imageClass}
       onError={() => setFailed(true)}
     />
   );
