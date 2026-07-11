@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { WALLET_NOTE_BRAND } from "@/lib/brand";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -40,8 +41,10 @@ export default function LoginPage() {
   return (
     <div className="grid min-h-screen place-items-center bg-slate-950 p-4">
       <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold">Wallet Note</h1>
-        <p className="mb-6 text-slate-500">Sign in to your account</p>
+        <div className="mb-6 text-center">
+          <img src={WALLET_NOTE_BRAND.logoUrl} alt="Wallet Note Logo" className="mx-auto h-auto w-56 rounded-2xl object-contain" />
+          <p className="mt-3 text-sm font-semibold text-slate-500">{WALLET_NOTE_BRAND.tagline}</p>
+        </div>
 
         <a
           href="/api/auth/google"
