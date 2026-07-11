@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import BrandLogo from "@/components/brand-logo";
 
 export default function LoginPage() {
   const [error, setError] = useState("");
@@ -38,10 +39,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-slate-950 p-4">
-      <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold">Wallet Note</h1>
-        <p className="mb-6 text-slate-500">Sign in to your account</p>
+    <div className="grid min-h-screen place-items-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-4">
+      <form onSubmit={submit} className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white p-7 shadow-2xl sm:p-8">
+        <div className="mb-7 rounded-3xl border border-slate-100 bg-slate-50 p-4">
+          <BrandLogo />
+        </div>
 
         <a
           href="/api/auth/google"
@@ -61,7 +63,7 @@ export default function LoginPage() {
           <input name="identity" className="field" placeholder="Email or username" required />
           <input name="password" type="password" className="field" placeholder="Password" required />
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <button disabled={loading} className="btn-primary w-full">
+          <button disabled={loading} className="btn-primary w-full py-3">
             {loading ? "Signing in..." : "Sign In"}
           </button>
           <p className="text-center text-sm text-slate-500">

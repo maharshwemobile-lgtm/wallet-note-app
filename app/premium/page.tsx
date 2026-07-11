@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function WalletPage() {
+export default function PremiumPage() {
   redirect("/accounts");
 }

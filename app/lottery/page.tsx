@@ -1,1 +1,6 @@
-import Shell from"@/components/shell";import LotteryClient from"@/components/lottery-client";export default function Page(){return <Shell title="3D Lottery"><LotteryClient/></Shell>}
+import Shell from "@/components/shell";
+import LotteryAgentClient from "@/components/lottery-agent-client";
+
+export default function LotteryPage() {
+  return <Shell title="ချဲစာရင်း 2D/3D"><LotteryAgentClient /></Shell>;
+}
