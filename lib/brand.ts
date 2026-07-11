@@ -7,3 +7,4 @@ export const WALLET_NOTE_BRAND = {
   description: "Personal wallet, remittance, debt and 2D/3D record management",
   logoUrl: WALLET_NOTE_LOGO_URL,
   logoProxy: WALLET_NOTE_LOGO_PROXY,
+} as const;
