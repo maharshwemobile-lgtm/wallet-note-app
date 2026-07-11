@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenCheck, Dices, HandCoins, LayoutDashboard, LogOut, Settings, Sheet, Users, WalletCards } from "lucide-react";
+import { BookOpenCheck, Dices, HandCoins, Info, LayoutDashboard, LogOut, Settings, Sheet, Users, WalletCards } from "lucide-react";
 import { WALLET_NOTE_BRAND } from "@/lib/brand";
 
 const links = [
@@ -13,6 +13,7 @@ const links = [
   ["/lottery", "ချဲစာရင်း 2D/3D", Dices],
   ["/connect-sheet", "My Sheet", Sheet],
   ["/settings", "Settings", Settings],
+  ["/about", "About Us", Info],
 ] as const;
 
 export default function Sidebar() {
@@ -44,7 +45,7 @@ export default function Sidebar() {
         <button onClick={logout} className="rounded-lg p-2 text-slate-300"><LogOut size={18}/></button>
       </div>
       <nav className="flex gap-1 overflow-x-auto pb-1">
-        {links.slice(0, 5).map(([href, label, Icon]) => <Link key={href} href={href} className={`flex min-w-28 flex-col items-center gap-1 rounded-lg px-3 py-2 text-[11px] ${pathname.startsWith(href) ? "bg-white text-slate-950" : "text-slate-300"}`}><Icon size={17}/><span className="whitespace-nowrap">{label}</span></Link>)}
+        {links.map(([href, label, Icon]) => <Link key={href} href={href} className={`flex min-w-28 flex-col items-center gap-1 rounded-lg px-3 py-2 text-[11px] ${pathname.startsWith(href) ? "bg-white text-slate-950" : "text-slate-300"}`}><Icon size={17}/><span className="whitespace-nowrap">{label}</span></Link>)}
       </nav>
     </div>
   </>;
