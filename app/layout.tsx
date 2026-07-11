@@ -1,21 +1,27 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import PwaRegister from "@/components/pwa-register";
+import { WALLET_NOTE_BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: {
-    default: "Wallet Note",
-    template: "%s | Wallet Note",
+    default: WALLET_NOTE_BRAND.name,
+    template: `%s | ${WALLET_NOTE_BRAND.name}`,
   },
-  description: "Personal wallet, remittance, debt and 2D/3D record management",
+  description: WALLET_NOTE_BRAND.description,
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/wallet-note-icon.svg",
-    apple: "/wallet-note-icon.svg",
+    icon: WALLET_NOTE_BRAND.logoProxy,
+    apple: WALLET_NOTE_BRAND.logoProxy,
+  },
+  openGraph: {
+    title: WALLET_NOTE_BRAND.name,
+    description: WALLET_NOTE_BRAND.description,
+    images: [WALLET_NOTE_BRAND.logoUrl],
   },
   appleWebApp: {
     capable: true,
-    title: "Wallet Note",
+    title: WALLET_NOTE_BRAND.name,
     statusBarStyle: "black-translucent",
   },
 };
