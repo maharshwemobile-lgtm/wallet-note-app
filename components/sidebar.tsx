@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpenCheck, Dices, HandCoins, LayoutDashboard, LogOut, Settings, Sheet, Users, WalletCards } from "lucide-react";
+import { WALLET_NOTE_BRAND } from "@/lib/brand";
 
 const links = [
   ["/dashboard", "Dashboard", LayoutDashboard],
@@ -24,9 +25,8 @@ export default function Sidebar() {
 
   return <>
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 overflow-y-auto bg-slate-950 p-5 text-white lg:block">
-      <div className="mb-8">
-        <div className="text-2xl font-bold">Wallet Note</div>
-        <div className="mt-1 text-xs text-slate-400">Personal Finance Workspace</div>
+      <div className="mb-8 rounded-3xl bg-white p-3 shadow-lg shadow-cyan-500/10">
+        <img src={WALLET_NOTE_BRAND.logoUrl} alt="Wallet Note Logo" className="h-auto w-full rounded-2xl object-contain" />
       </div>
       <nav className="space-y-2 pb-24">
         {links.map(([href, label, Icon]) => <Link key={href} href={href} className={`flex items-center gap-3 rounded-xl px-3 py-3 ${pathname.startsWith(href) ? "bg-white text-slate-950" : "text-slate-300 hover:bg-slate-900"}`}><Icon size={20}/>{label}</Link>)}
@@ -37,7 +37,10 @@ export default function Sidebar() {
 
     <div className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950 p-2 text-white lg:hidden">
       <div className="mb-2 flex items-center justify-between gap-2 px-2">
-        <span className="font-bold">Wallet Note</span>
+        <div className="flex items-center gap-2">
+          <img src={WALLET_NOTE_BRAND.logoUrl} alt="Wallet Note Logo" className="h-9 w-9 rounded-xl bg-white object-cover" />
+          <span className="font-bold">{WALLET_NOTE_BRAND.name}</span>
+        </div>
         <button onClick={logout} className="rounded-lg p-2 text-slate-300"><LogOut size={18}/></button>
       </div>
       <nav className="flex gap-1 overflow-x-auto pb-1">
