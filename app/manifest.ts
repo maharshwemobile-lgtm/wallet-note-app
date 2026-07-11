@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
+import { WALLET_NOTE_BRAND } from "@/lib/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Wallet Note",
-    short_name: "Wallet Note",
-    description: "Personal wallet, remittance, debt and 2D/3D record management",
+    name: WALLET_NOTE_BRAND.name,
+    short_name: WALLET_NOTE_BRAND.name,
+    description: WALLET_NOTE_BRAND.description,
     start_url: "/dashboard",
     scope: "/",
     display: "standalone",
@@ -13,15 +14,15 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait-primary",
     icons: [
       {
-        src: "/wallet-note-icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: WALLET_NOTE_BRAND.logoProxy,
+        sizes: "1024x1024",
+        type: "image/png",
         purpose: "any",
       },
       {
-        src: "/wallet-note-icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: WALLET_NOTE_BRAND.logoProxy,
+        sizes: "1024x1024",
+        type: "image/png",
         purpose: "maskable",
       },
     ],
