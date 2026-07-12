@@ -1,6 +1,6 @@
 {
   "name": "wallet-note",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,9 +11,8 @@
     "node": ">=20"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "googleapis": "^140.0.1"
-  }
-}
+    "google
