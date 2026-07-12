@@ -3,14 +3,18 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
-import {SYSTEM_SHEET_ID} from "./src/sheets-client.js";
-import {SYSTEM_TABS,ensureTabs} from "./src/schema.js";
-import {accountRoutes} from "./src/account-routes.js";
-import {walletBetRoutes} from "./src/wallet-bets-routes.js";
-import {debtExchangeRoutes} from "./src/debt-exchange-routes.js";
 
 dotenv.config({path:".env.production"});
 dotenv.config();
+
+const [{SYSTEM_SHEET_ID},{SYSTEM_TABS,ensureTabs},{accountRoutes},{walletBetRoutes},{debtExchangeRoutes}]=await Promise.all([
+  import("./src/sheets-client.js"),
+  import("./src/schema.js"),
+  import("./src/account-routes.js"),
+  import("./src/wallet-bets-routes.js"),
+  import("./src/debt-exchange-routes.js")
+]);
+
 const app=express(),PORT=Number(process.env.PORT||3005),HOST=process.env.HOSTNAME||"127.0.0.1";
 const root=path.dirname(fileURLToPath(import.meta.url));
 app.disable("x-powered-by");
