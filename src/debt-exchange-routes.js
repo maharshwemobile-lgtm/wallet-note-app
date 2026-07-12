@@ -1,0 +1,12 @@
+import crypto from "node:crypto";
+import {appendObject,clean,num,readTable} from "./sheets-client.js";
+import {updateFields} from "./schema.js";
+import {auth,requireSheet} from "./auth.js";
+import {addWallet} from "./wallet-bets-routes.js";
+
+export function debtExchangeRoutes(app){
+  app.get("/api/debts",auth,requireSheet,async(req,res,next)=>{try{res.json((await readTable(req.spreadsheetId,"Debts")).rows.slice(-500).reverse().map(clean))}catch(e){next(e)}});
+  app.post("/api/debts/:id/pay",auth,requireSheet,async(req,res,next)=>{try{const debt=(await readTable(req.spreadsheetId,"Debts")).rows.find(x=>x.id===req.params.id);if(!debt)return res.status(404).json({error:"Debt record not found"});if(debt.status==='PAID')return res.status(409).json({error:"This debt is already settled"});await updateFields(req.spreadsheetId,"Debts",debt.id,{status:'PAID',settledAt:new Date().toISOString()});await addWallet(req.spreadsheetId,{type:debt.kind==='RECEIVABLE'?'CASH_IN':'CASH_OUT',currency:debt.currency==='THB'?'THB':'MMK',amount:num(debt.amount),referenceType:'DEBT',referenceId:debt.id,note:`${debt.kind==='RECEIVABLE'?'Debt received':'Agent paid'}: ${debt.personName}`});res.json({ok:true})}catch(e){next(e)}});
+  app.get("/api/exchange",auth,requireSheet,async(req,res,next)=>{try{res.json((await readTable(req.spreadsheetId,"ExchangeTransactions")).rows.slice(-300).reverse().map(clean))}catch(e){next(e)}});
+  app.post("/api/exchange",auth,requireSheet,async(req,res,next)=>{try{const thb=num(req.body?.thbReceived),rate=num(req.body?.rate),fee=Math.max(0,num(req.body?.fee)),mmk=String(req.body?.mmkPaid??'').trim()===''?Math.max(0,thb*rate-fee):num(req.body?.mmkPaid);if(!(thb>0)||!(rate>0)||mmk<0)return res.status(400).json({error:"ဘတ်၊ Rate နဲ့ ထုတ်ပေးမည့်ကျပ်ကို စစ်ပါ"});const id=crypto.randomUUID(),name=String(req.body?.customerName||'').trim();await appendObject(req.spreadsheetId,"ExchangeTransactions",{id,createdAt:new Date().toISOString(),customerName:name,fromCurrency:'THB',fromAmount:thb,toCurrency:'MMK',toAmount:mmk,rate,note:String(req.body?.note||''),fee,profitType:req.body?.profitType==='FEE'?'FEE':'RATE'});await addWallet(req.spreadsheetId,{type:'EXCHANGE_IN',currency:'THB',amount:thb,referenceType:'EXCHANGE',referenceId:id,note:`Exchange ${name}`});if(mmk>0)await addWallet(req.spreadsheetId,{type:'EXCHANGE_OUT',currency:'MMK',amount:mmk,referenceType:'EXCHANGE',referenceId:id,note:`Exchange ${name}`});res.json({ok:true,mmkPaid:mmk})}catch(e){next(e)}});
+}

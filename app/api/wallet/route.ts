@@ -24,6 +24,6 @@ export async function POST(req: Request) {
     note: z.string().max(500).optional(),
   }).safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid data" }, { status: 400 });
-  await recordWalletTransaction(access.spreadsheetId, { ...parsed.data, status: "Pending" });
+  await recordWalletTransaction(access.spreadsheetId, { ...parsed.data, status: "Approved" });
   return NextResponse.json({ ok: true });
 }
