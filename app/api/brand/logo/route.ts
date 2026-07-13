@@ -1,27 +1,24 @@
-import { WALLET_NOTE_LOGO_URL } from "@/lib/brand";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
-export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const dynamic = "force-static";
 
 export async function GET() {
   try {
-    const response = await fetch(WALLET_NOTE_LOGO_URL, {
-      cache: "no-store",
-      headers: { "User-Agent": "Wallet-Note-App" },
-    });
+    const file = await readFile(path.join(process.cwd(), "app", "Wallet Note.png"));
 
-    if (!response.ok) {
-      return new Response("Logo unavailable", { status: 502 });
-    }
-
-    const body = await response.arrayBuffer();
-    return new Response(body, {
+    return new Response(file, {
       status: 200,
       headers: {
-        "Content-Type": response.headers.get("content-type") || "image/png",
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        "Content-Type": "image/png",
+        "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
       },
     });
   } catch {
-    return new Response("Logo unavailable", { status: 502 });
+    return new Response("Logo unavailable", {
+      status: 404,
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 }
